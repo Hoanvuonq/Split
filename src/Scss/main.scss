@@ -1,0 +1,50 @@
+.text-monospace {
+    font-family: monospace;
+}
+.all-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bg-gradient {
+    background-color: transparent;
+    background-image: linear-gradient(135deg, #eae8fd 0, #fce5e6 100%);
+}
+
+.shadow-custom {
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+        rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.btn {
+    box-shadow: 0 8px 3px -4px rgb(176, 176, 176);
+    transition: transform 0.5s ease;
+
+    &:active {
+        box-shadow: none;
+        transform: translateY(5px);
+    }
+}
+.text-monospace {
+    font-family: monospace;
+}
+
+.warning {
+    content: '';
+    display: block;
+    height: 2px;
+    background-color: yellow;
+    transition: width 2s ease-out;
+}
+
+// .warning.show-border::before {
+//     width: 100%;
+// }
+
+.rotate-icon {
+    &:hover {
+        transform: rotate(-180deg);
+        transition: transform 1s ease;
+    }
+}
