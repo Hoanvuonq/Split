@@ -5,6 +5,8 @@ import ClipboardJS from 'clipboard';
 import IconBack from '../../../assets/img/icon-black.png';
 import IconFormat from '../../../assets/img/icon-format.png';
 import IconSend from '../../../assets/img/icon-send.png';
+import IconDownload from '../../../assets/img/icon-download.png';
+import IconUpload from '../../../assets/img/icon-upload.png';
 import * as XLSX from 'xlsx';
 import { write, utils } from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -45,9 +47,6 @@ const Split = () => {
 
     const handleFormatText = () => {
         const formattedRows = inputText.split('\n').filter(row => row.trim() !== '');
-
-        // Ẩn check trùng lặp ở đây
-
         const formattedText = formattedRows.join('\n');
 
         setInputText(formattedText);
@@ -130,7 +129,7 @@ const Split = () => {
                             value={splitCharacter}
                             required
                             onChange={(e) => setSplitCharacter(e.target.value)}
-                            className="block outline-0 w-[135px] h-12 p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+                            className="block outline-0 w-[120px] h-12 p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
                         />
                     </div>
                     <select
@@ -138,43 +137,47 @@ const Split = () => {
                         className="bg-gray-50 p-3 border border-gray-300 text-gray-900 cursor-pointer outline-0 text-sm rounded-lg"
                         onChange={(e) => setSelectedColumns(parseInt(e.target.value, 10))}
                     >
-                        <option selected>Colum</option>
-                        <option value="1">1 Colum</option>
-                        <option value="2">2 Colum</option>
-                        <option value="3">3 Colum</option>
-                        <option value="4">4 Colum</option>
-                        <option value="5">5 Colum</option>
-                        <option value="6">6 Colum</option>
-                        <option value="7">7 Colum</option>
-                        <option value="8">8 Colum</option>
-                        <option value="9">9 Colum</option>
-                        <option value="10">10 Colum</option>
+                        {[...Array(10)].map((_, index) => (
+                            <option key={index} value={index + 1}>
+                                {index + 1} Column
+                            </option>
+                        ))}
                     </select>
 
                     <button
                         onClick={handleSplitText}
-                        className='btn py-2 w-24 h-10 text-sm px-8 bg-[#10b0e7] hover:bg-[#11a5e4] text-white font-bold all-center gap-2 rounded-xl transform'
+                        className='btn py-2 w-20 h-10 text-sm px-6 bg-[#10b0e7] hover:bg-[#11a5e4] text-white font-bold all-center gap-2 rounded-xl transform'
                     >
                         <img src={IconSend} alt="Icon Send" width={24} />
                     </button>
                     <button
                         onClick={handleGoBack}
-                        className='btn py-2 w-24 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
+                        className='btn py-2 w-20 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
                     >
                         <img src={IconBack} alt="Icon Back" width={24} className='rotate-icon' />
                     </button>
                     <button
                         onClick={handleFormatText}
-                        className='btn py-2 w-24 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
+                        className='btn py-2 w-20 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
                     >
                         <img src={IconFormat} alt="Icon Format" width={24} />
                     </button>
                     <button
                         onClick={handleDownloadExcel}
-                        className='btn py-2 w-24 h-10 text-sm px-6 bg-[#4caf50] hover:bg-[#43a047] text-white font-bold all-center gap-2 rounded-xl transform'
+                        className='btn py-2 w-20 h-10 text-sm px-6 bg-[#4caf50] hover:bg-[#43a047] text-white font-bold all-center gap-2 rounded-xl transform'
                     >
-                        Download Excel
+                        <img src={IconDownload} alt="Icon Download" width={24} />
                     </button>
+                    <label className="btn py-2 w-20 h-10 text-sm px-6 bg-[#4caf50] hover:bg-[#43a047] text-white font-bold all-center gap-2 rounded-xl transform">
+                        <img src={IconUpload} alt="Icon Upload " width={24} />
+                        <input
+                            type="file"
+                            accept=".txt, .xlsx, .xls"
+                            onChange={handleFileUpload}
+                            className="mt-4 hidden"
+                        />
+                    </label>
+
                 </div>
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[400px] shadow-custom flex p-3">
                     {columns.map((column, index) => (
@@ -193,12 +196,7 @@ const Split = () => {
                 </div>
             )}
 
-            <input
-                type="file"
-                accept=".txt, .xlsx, .xls"
-                onChange={handleFileUpload}
-                className="mt-4"
-            />
+
 
             <ToastContainer />
         </div>
