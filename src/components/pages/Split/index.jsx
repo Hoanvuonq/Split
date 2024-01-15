@@ -1,22 +1,24 @@
+import { saveAs } from 'file-saver';
+import { flatten, uniq } from 'lodash';
 import React, { useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ClipboardJS from 'clipboard';
+import * as XLSX from 'xlsx';
+import { utils, write } from 'xlsx';
 import IconBack from '../../../assets/img/icon-black.png';
+import IconDownload from '../../../assets/img/icon-download.png';
 import IconFormat from '../../../assets/img/icon-format.png';
 import IconSend from '../../../assets/img/icon-send.png';
-import IconDownload from '../../../assets/img/icon-download.png';
 import IconUpload from '../../../assets/img/icon-upload.png';
-import * as XLSX from 'xlsx';
-import { write, utils } from 'xlsx';
-import { saveAs } from 'file-saver';
+import useJobs from './jobs';
 
 const Split = () => {
+    const { state, handleGoBack } = useJobs();
     const [inputText, setInputText] = useState('');
     const [splitCharacter, setSplitCharacter] = useState('');
     const [columns, setColumns] = useState([]);
     const [warningMessage, setWarningMessage] = useState('');
     const [selectedColumns, setSelectedColumns] = useState(0);
+    const [sheetDataImport, setSheetDataImport] = useState([])
 
     const handleSplitText = () => {
         if (!splitCharacter) {
@@ -40,11 +42,6 @@ const Split = () => {
         setWarningMessage('');
     };
 
-    const handleGoBack = () => {
-        setColumns([]);
-        setWarningMessage('');
-    };
-
     const handleFormatText = () => {
         const formattedRows = inputText.split('\n').filter(row => row.trim() !== '');
         const formattedText = formattedRows.join('\n');
@@ -61,17 +58,15 @@ const Split = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
-
-            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-                const workbook = XLSX.read(content, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                const textData = sheetData.map(row => row.join(splitCharacter)).join('\n');
-                setInputText(textData);
-            } else {
-                setInputText(content);
-            }
+            const isChecking = !!file.name.endsWith('.xlsx') || !!file.name.endsWith('.xls')
+            const workbook = XLSX.read(content, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const flattenData = flatten(sheetData)
+            setSheetDataImport(flattenData)
+            const textData = isChecking ? sheetData.map(row => row.join(splitCharacter)).join('\n') : content
+            setInputText(textData);
         };
         reader.readAsBinaryString(file);
     };
@@ -93,6 +88,38 @@ const Split = () => {
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, 'output.xlsx');
     };
+
+    const handleUploadSearch = (event) => {
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+
+            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                const workbook = XLSX.read(content, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const flattenData = flatten(sheetData)
+                const splitEmail = flattenData.map(data => data.split(splitCharacter)[0])
+                let arrFilterEmail = []
+                splitEmail.forEach(res => findIndexData(res, sheetDataImport) && arrFilterEmail.push(findIndexData(res, sheetDataImport)))
+                const dataJoin = uniq(arrFilterEmail).toString().split(',').join('\n')
+                setInputText(dataJoin);
+                Success('Đã lọc xong.');
+            } else {
+                setInputText(content);
+            }
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    const findIndexData = (email, dataAfterSplit) => {
+        return dataAfterSplit.find(res => res.includes(email))
+    }
 
     const Success = (message) => {
         toast.success(message, {
@@ -177,6 +204,15 @@ const Split = () => {
                             className="mt-4 hidden"
                         />
                     </label>
+                    <label className="btn py-2 w-20 h-10 text-sm px-6 bg-[#4caf50] hover:bg-[#43a047] text-white font-bold all-center gap-2 rounded-xl transform">
+                        <img src={IconUpload} alt="Icon Upload " width={24} />
+                        <input
+                            type="file"
+                            accept=".txt, .xlsx, .xls"
+                            onChange={handleUploadSearch}
+                            className="mt-4 hidden"
+                        />
+                    </label>
 
                 </div>
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[400px] shadow-custom flex p-3">
@@ -195,10 +231,6 @@ const Split = () => {
                     <strong className="font-bold">{warningMessage}</strong>
                 </div>
             )}
-
-
-
-            <ToastContainer />
         </div>
     );
 };
