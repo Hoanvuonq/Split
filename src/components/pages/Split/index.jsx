@@ -10,6 +10,7 @@ import IconFormat from '../../../assets/img/icon-format.png';
 import IconSend from '../../../assets/img/icon-send.png';
 import IconUpload from '../../../assets/img/icon-upload.png';
 import useJobs from './jobs';
+import { Button } from "@material-tailwind/react";
 
 const Split = () => {
     const [inputText, setInputText] = useState('');
@@ -116,8 +117,8 @@ const Split = () => {
     }
 
     return (
-        <div className="w-full">
-            <div className="w-full h-full all-center mt-10 gap-5">
+        <div className="w-full h-full relative">
+            <div className="w-full all-center mt-10 gap-5">
                 <div className="input-data">
                     <textarea
                         rows="4"
@@ -152,12 +153,12 @@ const Split = () => {
                         ))}
                     </select>
 
-                    <button
+                    <Button
                         onClick={handleSplitText}
                         className='btn py-2 w-20 h-10 text-sm px-6 bg-[#10b0e7] hover:bg-[#11a5e4] text-white font-bold all-center gap-2 rounded-xl transform'
                     >
                         <img src={IconSend} alt="Icon Send" width={24} />
-                    </button>
+                    </Button>
 
                     <button
                         onClick={handleFormatText}
