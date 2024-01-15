@@ -5,7 +5,6 @@ const useJobs = () => {
 
     const handleGoBack = () => {
         setColumns([]);
-        setWarningMessage('');
     };
 
     return {

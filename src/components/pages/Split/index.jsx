@@ -1,10 +1,10 @@
 import { saveAs } from 'file-saver';
 import { flatten, uniq } from 'lodash';
+import ToastProvider from '../../../hook/Toast';
 import React, { useState } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
 import * as XLSX from 'xlsx';
 import { utils, write } from 'xlsx';
-import IconBack from '../../../assets/img/icon-black.png';
+import IconSearch from '../../../assets/img/icon-search.png';
 import IconDownload from '../../../assets/img/icon-download.png';
 import IconFormat from '../../../assets/img/icon-format.png';
 import IconSend from '../../../assets/img/icon-send.png';
@@ -12,17 +12,16 @@ import IconUpload from '../../../assets/img/icon-upload.png';
 import useJobs from './jobs';
 
 const Split = () => {
-    const { state, handleGoBack } = useJobs();
     const [inputText, setInputText] = useState('');
-    const [splitCharacter, setSplitCharacter] = useState('');
+    const [splitCharacter, setSplitCharacter] = useState('|');
     const [columns, setColumns] = useState([]);
     const [warningMessage, setWarningMessage] = useState('');
-    const [selectedColumns, setSelectedColumns] = useState(0);
+    const [selectedColumns, setSelectedColumns] = useState(1);
     const [sheetDataImport, setSheetDataImport] = useState([])
 
     const handleSplitText = () => {
         if (!splitCharacter) {
-            Warning('Ký tự Split không được trống.');
+            ToastProvider('warning', 'Ký tự Split không được trống.')
             return;
         }
 
@@ -39,7 +38,6 @@ const Split = () => {
         });
 
         setColumns(newColumns);
-        setWarningMessage('');
     };
 
     const handleFormatText = () => {
@@ -47,36 +45,32 @@ const Split = () => {
         const formattedText = formattedRows.join('\n');
 
         setInputText(formattedText);
-        Success('Đã định dạng lại văn bản.');
+        ToastProvider('success', 'Đã định dạng lại văn bản.')
     };
 
     const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-
-        if (!file) return;
-
+        console.log({ event: event.target.files })
+        if (!event.target.files[0]) return;
+        const fileLength = event.target.files.length
+        const file = event.target.files[fileLength - 1];
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
-            const isChecking = !!file.name.endsWith('.xlsx') || !!file.name.endsWith('.xls')
+            const isChecking = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.txt')
             const workbook = XLSX.read(content, { type: 'binary' });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
             const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            const flattenData = flatten(sheetData)
-            setSheetDataImport(flattenData)
+            setSheetDataImport(sheetData)
             const textData = isChecking ? sheetData.map(row => row.join(splitCharacter)).join('\n') : content
             setInputText(textData);
         };
+        ToastProvider('success', 'Upload file thành công')
         reader.readAsBinaryString(file);
     };
 
     const handleDownloadExcel = () => {
-        if (selectedColumns === 0) {
-            Warning('Vui lòng chọn số cột trước khi tải xuống.');
-            return;
-        }
-
+        if (!columns.length) return;
         const workbook = utils.book_new();
         const selectedColumnsData = columns.slice(0, selectedColumns);
         const transposedData = Array.from({ length: columns[0].length }, (_, rowIndex) =>
@@ -87,18 +81,18 @@ const Split = () => {
         const buffer = write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, 'output.xlsx');
+        ToastProvider('success', 'Download file thành công')
     };
 
     const handleUploadSearch = (event) => {
-        const file = event.target.files[0];
-
-        if (!file) return;
-
+        console.log({ event: event.target.files })
+        if (!event.target.files[0]) return;
+        const fileLength = event.target.files.length
+        const file = event.target.files[fileLength - 1];
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
-
-            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.txt')) {
                 const workbook = XLSX.read(content, { type: 'binary' });
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
@@ -107,43 +101,29 @@ const Split = () => {
                 const splitEmail = flattenData.map(data => data.split(splitCharacter)[0])
                 let arrFilterEmail = []
                 splitEmail.forEach(res => findIndexData(res, sheetDataImport) && arrFilterEmail.push(findIndexData(res, sheetDataImport)))
-                const dataJoin = uniq(arrFilterEmail).toString().split(',').join('\n')
+                const dataJoin = uniq(arrFilterEmail.map(row => row.join(splitCharacter))).join('\n')
                 setInputText(dataJoin);
-                Success('Đã lọc xong.');
             } else {
                 setInputText(content);
             }
         };
         reader.readAsBinaryString(file);
+        ToastProvider('success', 'Lọc email thành công')
     }
 
     const findIndexData = (email, dataAfterSplit) => {
         return dataAfterSplit.find(res => res.includes(email))
     }
 
-    const Success = (message) => {
-        toast.success(message, {
-            position: toast.POSITION.TOP_RIGHT,
-            autoClose: 1000,
-        });
-    };
-
-    const Warning = (message) => {
-        toast.warning(message, {
-            position: toast.POSITION.TOP_RIGHT,
-            autoClose: 1000,
-        });
-    };
-
     return (
         <div className="w-full">
             <div className="w-full h-full all-center mt-10 gap-5">
-                <div className="">
+                <div className="input-data">
                     <textarea
                         rows="4"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
-                        className="block p-3 text-sm outline-0 text-gray-900 bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[400px] shadow-custom "
+                        className="block p-3 text-sm outline-0 text-gray-900 bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[500px] shadow-custom "
                         placeholder="Write your thoughts here..."
                     ></textarea>
                 </div>
@@ -154,6 +134,7 @@ const Split = () => {
                             type="text"
                             id="character"
                             value={splitCharacter}
+                            defaultValue={splitCharacter}
                             required
                             onChange={(e) => setSplitCharacter(e.target.value)}
                             className="block outline-0 w-[120px] h-12 p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
@@ -177,12 +158,7 @@ const Split = () => {
                     >
                         <img src={IconSend} alt="Icon Send" width={24} />
                     </button>
-                    <button
-                        onClick={handleGoBack}
-                        className='btn py-2 w-20 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
-                    >
-                        <img src={IconBack} alt="Icon Back" width={24} className='rotate-icon' />
-                    </button>
+
                     <button
                         onClick={handleFormatText}
                         className='btn py-2 w-20 h-10 text-sm px-6 bg-[#ff8831] hover:bg-[#ff742f] text-white font-bold all-center gap-2 rounded-xl transform'
@@ -202,20 +178,24 @@ const Split = () => {
                             accept=".txt, .xlsx, .xls"
                             onChange={handleFileUpload}
                             className="mt-4 hidden"
+                            onClick={event => event.target.value = null}
+                            name='uploadFile'
                         />
                     </label>
                     <label className="btn py-2 w-20 h-10 text-sm px-6 bg-[#4caf50] hover:bg-[#43a047] text-white font-bold all-center gap-2 rounded-xl transform">
-                        <img src={IconUpload} alt="Icon Upload " width={24} />
+                        <img src={IconSearch} alt="Icon Upload " width={24} />
                         <input
                             type="file"
                             accept=".txt, .xlsx, .xls"
                             onChange={handleUploadSearch}
+                            name='uploadSearch'
+                            onClick={event => event.target.value = null}
                             className="mt-4 hidden"
                         />
                     </label>
 
                 </div>
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[400px] shadow-custom flex p-3">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl w-[600px] h-[500px] shadow-custom flex p-3">
                     {columns.map((column, index) => (
                         <textarea
                             key={index}
