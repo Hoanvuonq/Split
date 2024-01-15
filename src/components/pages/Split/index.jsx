@@ -50,7 +50,6 @@ const Split = () => {
     };
 
     const handleFileUpload = (event) => {
-        console.log({ event: event.target.files })
         if (!event.target.files[0]) return;
         const fileLength = event.target.files.length
         const file = event.target.files[fileLength - 1];
@@ -62,8 +61,10 @@ const Split = () => {
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
             const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            console.log({ sheetData })
             setSheetDataImport(sheetData)
             const textData = isChecking ? sheetData.map(row => row.join(splitCharacter)).join('\n') : content
+            console.log({ textData })
             setInputText(textData);
         };
         ToastProvider('success', 'Upload file thành công')
@@ -100,16 +101,16 @@ const Split = () => {
                 const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                 const flattenData = flatten(sheetData)
                 const splitEmail = flattenData.map(data => data.split(splitCharacter)[0])
+                console.log({ splitEmail, flattenData })
                 let arrFilterEmail = []
                 splitEmail.forEach(res => findIndexData(res, sheetDataImport) && arrFilterEmail.push(findIndexData(res, sheetDataImport)))
+                if (!arrFilterEmail.length) return ToastProvider('error', 'Không có email trùng')
                 const dataJoin = uniq(arrFilterEmail.map(row => row.join(splitCharacter))).join('\n')
                 setInputText(dataJoin);
-            } else {
-                setInputText(content);
+                ToastProvider('success', 'Lọc email thành công')
             }
         };
         reader.readAsBinaryString(file);
-        ToastProvider('success', 'Lọc email thành công')
     }
 
     const findIndexData = (email, dataAfterSplit) => {
