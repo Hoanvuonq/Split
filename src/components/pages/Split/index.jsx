@@ -1,15 +1,33 @@
+import React, { useRef, useState } from 'react';
 import { saveAs } from 'file-saver';
 import { flatten, uniq } from 'lodash';
-import ToastProvider from '../../../hook/Toast';
-import React, { useRef, useState } from 'react';
+import ToastProvider from '../../../hook/ToastProvider';
 import * as XLSX from 'xlsx';
 import { utils, write } from 'xlsx';
 import IconSearch from '../../../assets/img/icon-search.png';
 import IconDownload from '../../../assets/img/icon-download.png';
+import IconUpload from '../../../assets/img/icon-upload.png';
 import IconFormat from '../../../assets/img/icon-format.png';
 import IconSend from '../../../assets/img/icon-send.png';
-import useJobs from './jobs';
-import { Button, Input } from "@material-tailwind/react";
+import Button from '../../layouts/Button';
+
+const UploadButton = ({ inputRef, onChange, onClick, img }) => (
+    <label>
+        <input
+            ref={inputRef}
+            type="file"
+            accept=".txt, .xlsx, .xls"
+            onChange={onChange}
+            onClick={(event) => {
+                event.target.value = null;
+                onClick();
+            }}
+            id="icon-button-file"
+            className="mt-4 hidden"
+        />
+        <Button onClick={() => inputRef.current && inputRef.current.click()} img={img} />
+    </label>
+);
 
 const Split = () => {
     const uploadInputRef = useRef(null);
@@ -17,15 +35,20 @@ const Split = () => {
     const [inputText, setInputText] = useState('');
     const [splitCharacter, setSplitCharacter] = useState('|');
     const [columns, setColumns] = useState([]);
-    const [warningMessage, setWarningMessage] = useState('');
     const [selectedColumns, setSelectedColumns] = useState(1);
     const [sheetDataImport, setSheetDataImport] = useState([])
 
     const handleSplitText = () => {
         if (!splitCharacter) {
-            ToastProvider('warning', 'Ký tự Split không được trống.')
+            ToastProvider('warning', 'Ký tự Split không được trống.');
             return;
         }
+
+        if (!inputText.trim()) {
+            ToastProvider('warning', 'Vui lòng nhập dữ liệu trước khi thực hiện tách.');
+            return;
+        }
+
         const rows = inputText.split('\n');
         const maxColumns = Math.max(...rows.map(row => row.split(splitCharacter).length));
 
@@ -39,6 +62,7 @@ const Split = () => {
         });
 
         setColumns(newColumns);
+        ToastProvider('success', 'Slipt file thành công')
     };
 
     const handleFormatText = () => {
@@ -124,7 +148,7 @@ const Split = () => {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     className="input-data block p-3 text-sm outline-0 text-gray-900 bg-gray-50 dark:bg-[#3b3e45] dark:text-white border dark:border-0 border-gray-300 rounded-lg w-[600px] h-[500px] shadow-custom"
-                    placeholder="Import DATA ..."
+                    placeholder="Import the Data to Split"
                 ></textarea>
                 <div className="flex flex-col all-center gap-2" >
                     <div className="mb-6">
@@ -150,72 +174,18 @@ const Split = () => {
                             </option>
                         ))}
                     </select>
-                    <Button variant="filled" onClick={handleSplitText} className='bg-[#10b0e7] hover:bg-[#11a5e4] btn transform '>
-                        <img src={IconSend} alt="Icon Send" width={18} />
-                    </Button>
-                    <Button variant="filled" onClick={handleFormatText} className='bg-[#10b0e7] hover:bg-[#11a5e4] btn transform '>
-                        <img src={IconFormat} alt="Icon Format" width={18} />
-                    </Button>
-                    <Button variant="filled" onClick={handleDownloadExcel} className='bg-[#10b0e7] hover:bg-[#11a5e4] btn transform '>
-                        <img src={IconDownload} alt="Icon Format" width={18} />
-                    </Button>
-                    <label>
-                        <input
-                            ref={searchInputRef}
-                            type="file"
-                            accept=".txt, .xlsx, .xls"
-                            onChange={handleUploadSearch}
-                            onClick={event => event.target.value = null}
-                            id="icon-button-file"
-                            className="mt-4 hidden"
-                        />
-                        <Button
-                            variant="filled"
-                            className="flex items-center gap-3 bg-[#10b0e7] hover:bg-[#11a5e4] btn  transform"
-                            onClick={() => searchInputRef.current && searchInputRef.current.click()}
-                        >
-                            <img src={IconSearch} alt="Icon Upload " width={18} />
-                        </Button>
-                    </label>
-                    <label>
-                        <input
-                            ref={uploadInputRef}
-                            color="primary"
-                            accept=".txt, .xlsx, .xls"
-                            type="file"
-                            onChange={handleFileUpload}
-                            onClick={event => event.target.value = null}
-                            id="icon-button-file"
-                            className="mt-4 hidden"
-                        />
-                        <Button
-                            variant="filled" className="flex items-center bg-[#10b0e7] hover:bg-[#11a5e4] btn gap-3 dark:border-white"
-                            onClick={() => uploadInputRef.current && uploadInputRef.current.click()}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="h-5 w-5 dark:text-white"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
-                                />
-                            </svg>
-                        </Button>
-                    </label>
-
+                    <Button onClick={handleSplitText} img={IconSend} />
+                    <Button onClick={handleFormatText} img={IconFormat} />
+                    <Button onClick={handleDownloadExcel} img={IconDownload} />
+                    <UploadButton inputRef={searchInputRef} onChange={handleUploadSearch} onClick={() => { }} img={IconSearch} />
+                    <UploadButton inputRef={uploadInputRef} onChange={handleFileUpload} onClick={() => { }} img={IconUpload} />
                 </div>
-                <div className="bg-gray-50 dark:bg-[#3b3e45] input-data !p-4 border dark:border-0 border-gray-300 rounded-lg w-[600px] h-[500px] shadow-custom flex p-3 gap-2">
+                <div className="bg-gray-50 dark:bg-[#3b3e45] input-data !p-4 border dark:border-0 border-gray-300 rounded-lg w-[600px] h-[500px] shadow-custom flex gap-2 overflow-x-auto">
                     {columns.map((column, index) => (
                         <textarea
                             key={index}
                             value={column.join('\n')}
-                            className={`input-data block w-[50%] !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-${100 / selectedColumns}% h-full`}
+                            className={` block w-[50%] !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-${100 / selectedColumns}% h-full`}
                         />
                     ))}
                 </div>

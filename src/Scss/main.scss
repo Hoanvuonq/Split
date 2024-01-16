@@ -48,9 +48,6 @@
 }
 
 .input-data {
-    // width: 40%;
-    // height: 500px;
-    padding: 20px 40px;
     overflow-x: auto;
     background: #fff;
     box-shadow: 0px 6px 50px 0px rgba(0, 0, 0, 0.1),
@@ -73,11 +70,6 @@
 
 .input-data::-webkit-scrollbar-track {
     background-color: #f1f1f1;
-    border-radius: 3px;
-}
-
-.input-data::-webkit-scrollbar-track:hover {
-    background-color: #e5e5e5;
 }
 
 .rotate-icon {

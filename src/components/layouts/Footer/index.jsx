@@ -8,7 +8,7 @@ const Footer = () => {
                 <a href="#" className="logo ">
                     <img src={Logo} alt="Logo INFINITY" className="!w-[30px] " />
                 </a>
-                <p className="text-monospace dark:text-white">Copyright © 2023 Infinity Software</p>
+                <p className="text-monospace dark:text-white">Coder © 2024 Infinity Software</p>
             </div>
         </footer>
     )
