@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { saveAs } from 'file-saver';
 import { flatten, uniq } from 'lodash';
 import ToastProvider from '../../../hook/ToastProvider';
@@ -37,30 +37,26 @@ const Split = () => {
     const [columns, setColumns] = useState([]);
     const [selectedColumns, setSelectedColumns] = useState(1);
     const [sheetDataImport, setSheetDataImport] = useState([])
+    const [rowCount, setRowCount] = useState(0);
 
     const handleSplitText = () => {
         if (!splitCharacter) {
             ToastProvider('warning', 'Ký tự Split không được trống.');
             return;
         }
-
         if (!inputText.trim()) {
             ToastProvider('warning', 'Vui lòng nhập dữ liệu trước khi thực hiện tách.');
             return;
         }
-
         const rows = inputText.split('\n');
         const maxColumns = Math.max(...rows.map(row => row.split(splitCharacter).length));
-
         const effectiveColumns = selectedColumns || maxColumns;
-
         const newColumns = Array.from({ length: effectiveColumns }, (_, index) => {
             return rows.map(row => {
                 const rowColumns = row.split(splitCharacter);
                 return rowColumns[index] || '';
             });
         });
-
         setColumns(newColumns);
         ToastProvider('success', 'Slipt file thành công')
     };
@@ -139,58 +135,80 @@ const Split = () => {
     const findIndexData = (email, dataAfterSplit) => {
         return dataAfterSplit.find(res => res.includes(email))
     }
+    useEffect(() => {
+        const updateRowCount = () => {
+            const rows = inputText.split('\n');
+            setRowCount(rows.length);
+        };
 
+        updateRowCount();
+
+        const intervalId = setInterval(updateRowCount, 100);
+
+        return () => clearInterval(intervalId);
+    }, [inputText]);
     return (
-        <div className="w-full">
-            <div className="w-full h-full all-center mt-10 gap-5">
-                <textarea
-                    rows="4"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    className="input-data block p-3 text-sm outline-0 text-gray-900 bg-gray-50 dark:bg-[#3b3e45] dark:text-white border dark:border-0 border-gray-300 rounded-lg w-[600px] h-[500px] shadow-custom"
-                    placeholder="Import the Data to Split"
-                ></textarea>
-                <div className="flex flex-col all-center gap-2" >
-                    <div className="mb-6">
-                        <label htmlFor="character" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Character</label>
-                        <input
-                            type="text"
-                            id="character"
-                            value={splitCharacter}
-                            defaultValue={splitCharacter}
-                            required
-                            onChange={(e) => setSplitCharacter(e.target.value)}
-                            className="block outline-0 w-[120px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
-                        />
+        <div className='pb-10'>
+            <div className="w-full flex justify-center px-10">
+                <div className="w-full h-full flex-col all-center mt-10 gap-5">
+                    <textarea
+                        rows="4"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        className="cus-textarea-x block p-3 text-sm outline-0 text-gray-900 bg-gray-50 dark:bg-[#3b3e45] dark:text-white border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[200px] shadow-func-btn"
+                        placeholder="Import the Data to Split"
+                    ></textarea>
+                    <div className="flex all-center w-[1000px] gap-2 h-7" >
+                        <div className="flex items-center">
+                            <input
+                                type="text"
+                                id="character"
+                                value={`${rowCount}` + " row"}
+                                defaultValue={rowCount}
+                                required
+                                className="block outline-0 w-[80px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+                            />
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="text"
+                                id="character"
+                                value={splitCharacter}
+                                defaultValue={splitCharacter}
+                                required
+                                onChange={(e) => setSplitCharacter(e.target.value)}
+                                className="block outline-0 w-[120px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+                            />
+                        </div>
+                        <select
+                            id="number"
+                            className="bg-gray-50 h-12 p-3 border border-gray-300 dark:bg-[#2f3136] dark:text-white text-gray-900 cursor-pointer outline-0 text-sm rounded-lg"
+                            onChange={(e) => setSelectedColumns(parseInt(e.target.value, 10))}
+                        >
+                            {[...Array(10)].map((_, index) => (
+                                <option key={index} value={index + 1}>
+                                    {index + 1} Column
+                                </option>
+                            ))}
+                        </select>
+                        <Button onClick={handleSplitText} img={IconSend} />
+                        <Button onClick={handleFormatText} img={IconFormat} />
+                        <Button onClick={handleDownloadExcel} img={IconDownload} />
+                        <UploadButton inputRef={searchInputRef} onChange={handleUploadSearch} onClick={() => { }} img={IconSearch} />
+                        <UploadButton inputRef={uploadInputRef} onChange={handleFileUpload} onClick={() => { }} img={IconUpload} />
                     </div>
-                    <select
-                        id="number"
-                        className="bg-gray-50 h-12 p-3 border border-gray-300 dark:bg-[#2f3136] dark:text-white text-gray-900 cursor-pointer outline-0 text-sm rounded-lg"
-                        onChange={(e) => setSelectedColumns(parseInt(e.target.value, 10))}
-                    >
-                        {[...Array(10)].map((_, index) => (
-                            <option key={index} value={index + 1}>
-                                {index + 1} Column
-                            </option>
+                    <div className="bg-gray-50 dark:bg-[#3b3e45] cus-overflow-x !p-4 border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[500px] shadow-func-btn flex gap-2 overflow-x-auto">
+                        {columns.map((column, index) => (
+                            <textarea
+                                key={index}
+                                value={column.join('\n')}
+                                className='flex-shrink-0 !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-[300px] h-full cus-textarea-x'
+                            />
                         ))}
-                    </select>
-                    <Button onClick={handleSplitText} img={IconSend} />
-                    <Button onClick={handleFormatText} img={IconFormat} />
-                    <Button onClick={handleDownloadExcel} img={IconDownload} />
-                    <UploadButton inputRef={searchInputRef} onChange={handleUploadSearch} onClick={() => { }} img={IconSearch} />
-                    <UploadButton inputRef={uploadInputRef} onChange={handleFileUpload} onClick={() => { }} img={IconUpload} />
+                    </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-[#3b3e45] input-data !p-4 border dark:border-0 border-gray-300 rounded-lg w-[600px] h-[500px] shadow-custom flex gap-2 overflow-x-auto">
-                    {columns.map((column, index) => (
-                        <textarea
-                            key={index}
-                            value={column.join('\n')}
-                            className={` block w-[50%] !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-${100 / selectedColumns}% h-full`}
-                        />
-                    ))}
-                </div>
-            </div>
-        </div >
+            </div >
+        </div>
     );
 };
 
