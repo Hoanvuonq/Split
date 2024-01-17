@@ -148,67 +148,65 @@ const Split = () => {
         return () => clearInterval(intervalId);
     }, [inputText]);
     return (
-        <div className='pb-10'>
-            <div className="w-full flex justify-center px-10">
-                <div className="w-full h-full flex-col all-center mt-10 gap-5">
-                    <textarea
-                        rows="4"
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                        className="cus-textarea-x block p-3 text-sm outline-0 text-gray-900 bg-gray-50 dark:bg-[#3b3e45] dark:text-white border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[200px] shadow-func-btn"
-                        placeholder="Import the Data to Split"
-                    ></textarea>
-                    <div className="flex all-center w-[1000px] gap-2 h-7" >
-                        <div className="flex items-center">
-                            <input
-                                type="text"
-                                id="character"
-                                value={`${rowCount}` + " row"}
-                                defaultValue={rowCount}
-                                required
-                                className="block outline-0 w-[80px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
-                            />
-                        </div>
-                        <div className="flex items-center">
-                            <input
-                                type="text"
-                                id="character"
-                                value={splitCharacter}
-                                defaultValue={splitCharacter}
-                                required
-                                onChange={(e) => setSplitCharacter(e.target.value)}
-                                className="block outline-0 w-[120px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
-                            />
-                        </div>
-                        <select
-                            id="number"
-                            className="bg-gray-50 h-12 p-3 border border-gray-300 dark:bg-[#2f3136] dark:text-white text-gray-900 cursor-pointer outline-0 text-sm rounded-lg"
-                            onChange={(e) => setSelectedColumns(parseInt(e.target.value, 10))}
-                        >
-                            {[...Array(10)].map((_, index) => (
-                                <option key={index} value={index + 1}>
-                                    {index + 1} Column
-                                </option>
-                            ))}
-                        </select>
-                        <Button onClick={handleSplitText} img={IconSend} />
-                        <Button onClick={handleFormatText} img={IconFormat} />
-                        <Button onClick={handleDownloadExcel} img={IconDownload} />
-                        <UploadButton inputRef={searchInputRef} onChange={handleUploadSearch} onClick={() => { }} img={IconSearch} />
-                        <UploadButton inputRef={uploadInputRef} onChange={handleFileUpload} onClick={() => { }} img={IconUpload} />
+        <div className="w-full flex justify-center px-10">
+            <div className="w-full h-full flex-col all-center mt-10 gap-5">
+                <textarea
+                    rows="4"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    className="cus-textarea-x block p-3 text-sm outline-0 text-gray-900 bg-gray-50 dark:bg-[#3b3e45] dark:text-white border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[200px] shadow-func-btn"
+                    placeholder="Import the Data to Split"
+                ></textarea>
+                <div className="flex all-center w-[1000px] gap-2 h-7" >
+                    <div className="flex items-center">
+                        <input
+                            type="text"
+                            id="character"
+                            value={`${rowCount}` + " row"}
+                            defaultValue={rowCount}
+                            required
+                            className="block outline-0 w-[80px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+                        />
                     </div>
-                    <div className="bg-gray-50 dark:bg-[#3b3e45] cus-overflow-x !p-4 border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[500px] shadow-func-btn flex gap-2 overflow-x-auto">
-                        {columns.map((column, index) => (
-                            <textarea
-                                key={index}
-                                value={column.join('\n')}
-                                className='flex-shrink-0 !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-[300px] h-full cus-textarea-x'
-                            />
+                    <div className="flex items-center">
+                        <input
+                            type="text"
+                            id="character"
+                            value={splitCharacter}
+                            defaultValue={splitCharacter}
+                            required
+                            onChange={(e) => setSplitCharacter(e.target.value)}
+                            className="block outline-0 w-[120px] h-12 p-4 text-gray-900 dark:bg-[#2f3136] dark:text-white border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+                        />
+                    </div>
+                    <select
+                        id="number"
+                        className="bg-gray-50 h-12 p-3 border border-gray-300 dark:bg-[#2f3136] dark:text-white text-gray-900 cursor-pointer outline-0 text-sm rounded-lg"
+                        onChange={(e) => setSelectedColumns(parseInt(e.target.value, 10))}
+                    >
+                        {[...Array(10)].map((_, index) => (
+                            <option key={index} value={index + 1}>
+                                {index + 1} Column
+                            </option>
                         ))}
-                    </div>
+                    </select>
+                    <Button onClick={handleSplitText} img={IconSend} />
+                    <Button onClick={handleFormatText} img={IconFormat} />
+                    <Button onClick={handleDownloadExcel} img={IconDownload} />
+                    <UploadButton inputRef={searchInputRef} onChange={handleUploadSearch} onClick={() => { }} img={IconSearch} />
+                    <UploadButton inputRef={uploadInputRef} onChange={handleFileUpload} onClick={() => { }} img={IconUpload} />
                 </div>
-            </div >
-        </div>
+                <div className="bg-gray-50 dark:bg-[#3b3e45] cus-overflow-x !p-4 border dark:border-0 border-gray-300 rounded-lg w-[1000px] h-[500px] shadow-func-btn flex gap-2 overflow-x-auto">
+                    {columns.map((column, index) => (
+                        <textarea
+                            key={index}
+                            value={column.join('\n')}
+                            className='flex-shrink-0 !p-4 text-sm outline-0 dark:text-white dark:bg-[#2f3136] dark:border-0 text-gray-900 bg-gray-50 border border-gray-300 w-[300px] h-full cus-textarea-x'
+                        />
+                    ))}
+                </div>
+            </div>
+        </div >
     );
 };
 

@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import Logo from '../../../assets/img/logo.png'
 import DarkModeToggle from "react-dark-mode-toggle";
 
+const menuList = [
+    { title: "Split Text", link: "/" },
+    { title: "2Fa", link: "/" },
+]
 const Header = () => {
     const [isDarkMode, setIsDarkMode] = useState(() => false);
 
@@ -15,10 +19,13 @@ const Header = () => {
             <div className="w-[200px] all-center py-2 ml-[174px]">
                 <img src={Logo} alt="Logo Infinity" width={100} />
             </div>
-            {/* <div className="list-menu  flex gap-2">
-                <Link className='font-bold'>Split Text</Link>
-                <Link className='font-bold'>2 FA</Link>
-            </div> */}
+            <div className="list-menu flex gap-10">
+                {/* {menuList.map((item) => {
+                    <Link to={item.link} className='font-bold text-gray-800 font-sans'>{item.title}</Link>
+                })} */}
+                <Link to={"/"} className='font-bold text-gray-800 dark:text-white font-sans'>Split Text</Link>
+                <Link to={"/factor-auth"} className='font-bold text-gray-800 dark:text-white font-sans'>2 FA</Link>
+            </div>
             <div className="flex gap-4 items-center pb-1">
                 <div className="shadow-toggle-light rounded-full w-[66px] h-[34px] block dark:hidden">
                     <DarkModeToggle
